@@ -1,8 +1,13 @@
 import Button from '@app/components/Common/Button';
 import MultiRangeSlider from '@app/components/Common/MultiRangeSlider';
+import SlideCheckbox from '@app/components/Common/SlideCheckbox';
 import SlideOver from '@app/components/Common/SlideOver';
 import type { FilterOptions } from '@app/components/Discover/constants';
-import { countActiveFilters } from '@app/components/Discover/constants';
+import {
+  AVAILABILITY_ALL,
+  countActiveFilters,
+  isHidingAvailableOrRequested,
+} from '@app/components/Discover/constants';
 import LanguageSelector from '@app/components/LanguageSelector';
 import {
   CompanySelector,
@@ -45,6 +50,9 @@ const messages = defineMessages('components.Discover.FilterSlideover', {
   voteCount: 'Number of votes between {minValue} and {maxValue}',
   status: 'Status',
   certification: 'Content Rating',
+  availability: 'Hide Available and Requested',
+  availabilityTip:
+    'Hides titles already in your library or already requested. On by default.',
 });
 
 type FilterSlideoverProps = {
@@ -80,6 +88,29 @@ const FilterSlideover = ({
       onClose={() => onClose()}
     >
       <div className="flex flex-col space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex flex-col pr-4">
+            <span className="text-lg font-semibold">
+              {intl.formatMessage(messages.availability)}
+            </span>
+            <span className="text-sm text-gray-400">
+              {intl.formatMessage(messages.availabilityTip)}
+            </span>
+          </div>
+          <SlideCheckbox
+            checked={isHidingAvailableOrRequested(currentFilters.availability)}
+            onClick={() => {
+              // Hiding is the default, so turning the filter back ON removes the
+              // param entirely and turning it off writes an explicit 'all'.
+              updateQueryParams(
+                'availability',
+                isHidingAvailableOrRequested(currentFilters.availability)
+                  ? AVAILABILITY_ALL
+                  : undefined
+              );
+            }}
+          />
+        </div>
         <div>
           <div className="mb-2 text-lg font-semibold">
             {intl.formatMessage(

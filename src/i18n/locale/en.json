@@ -82,6 +82,8 @@
   "components.Discover.DiscoverWatchlist.discoverwatchlist": "Your Watchlist",
   "components.Discover.DiscoverWatchlist.watchlist": "Plex Watchlist",
   "components.Discover.FilterSlideover.activefilters": "{count, plural, one {# Active Filter} other {# Active Filters}}",
+  "components.Discover.FilterSlideover.availability": "Hide Available and Requested",
+  "components.Discover.FilterSlideover.availabilityTip": "Hides titles already in your library or already requested. On by default.",
   "components.Discover.FilterSlideover.certification": "Content Rating",
   "components.Discover.FilterSlideover.clearfilters": "Clear Active Filters",
   "components.Discover.FilterSlideover.excludeKeywords": "Exclude Keywords",

@@ -115,9 +115,41 @@ export const QueryFilterOptions = z.object({
   certificationLte: z.string().optional(),
   certificationCountry: z.string().optional(),
   certificationMode: z.enum(['exact', 'range']).optional(),
+  // Frontend-only filter. The discover API rejects unknown query params with a
+  // 400, so useDiscover strips this before building the upstream request.
+  // Deliberately z.string() rather than z.enum so a hand-edited or stale URL
+  // value cannot throw out of prepareFilterValues; it is normalized below.
+  availability: z.string().optional(),
 });
 
 export type FilterOptions = z.infer<typeof QueryFilterOptions>;
+
+/**
+ * Availability filter values for the `availability` browse param.
+ *
+ * `hide` removes rows that are already in the library or already requested.
+ * `all` shows everything.
+ */
+export const AVAILABILITY_ALL = 'all';
+export const AVAILABILITY_HIDE = 'hide';
+
+/**
+ * The value used when the URL carries no `availability` param at all.
+ *
+ * This filter is ON by default: a bare /discover/movies hides titles that are
+ * already available or already requested.
+ */
+export const AVAILABILITY_DEFAULT = AVAILABILITY_HIDE;
+
+/**
+ * Whether the availability filter is currently removing rows, accounting for
+ * the default. Unrecognized values fall back to the default rather than
+ * silently disabling the filter.
+ */
+export const isHidingAvailableOrRequested = (availability?: string): boolean =>
+  (availability === AVAILABILITY_ALL || availability === AVAILABILITY_HIDE
+    ? availability
+    : AVAILABILITY_DEFAULT) !== AVAILABILITY_ALL;
 
 export const prepareFilterValues = (
   inputValues: ParsedUrlQuery
@@ -226,6 +258,15 @@ export const prepareFilterValues = (
     filterValues.certificationMode = 'range';
   }
 
+  // Normalize to a known value. Anything unrecognized (or absent) is dropped so
+  // the filter falls back to AVAILABILITY_DEFAULT.
+  if (
+    values.availability === AVAILABILITY_ALL ||
+    values.availability === AVAILABILITY_HIDE
+  ) {
+    filterValues.availability = values.availability;
+  }
+
   return filterValues;
 };
 
@@ -268,6 +309,18 @@ export const countActiveFilters = (filterValues: FilterOptions): number => {
     delete clonedFilters.certificationGte;
     delete clonedFilters.certificationLte;
     delete clonedFilters.certificationCountry;
+  }
+
+  // The availability filter defaults to ON, so it is counted from its EFFECTIVE
+  // state rather than from the presence of a URL param. Counting presence alone
+  // would report "0 Active Filters" on a bare /discover/movies that is in fact
+  // hiding rows, which is the dishonest state this filter exists to avoid.
+  const hidingAvailableOrRequested = isHidingAvailableOrRequested(
+    clonedFilters.availability
+  );
+  delete clonedFilters.availability;
+  if (hidingAvailableOrRequested) {
+    totalCount += 1;
   }
 
   delete clonedFilters.certificationMode;

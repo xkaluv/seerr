@@ -4,6 +4,7 @@ import ListView from '@app/components/Common/ListView';
 import PageTitle from '@app/components/Common/PageTitle';
 import type { FilterOptions } from '@app/components/Discover/constants';
 import {
+  AVAILABILITY_DEFAULT,
   countActiveFilters,
   prepareFilterValues,
 } from '@app/components/Discover/constants';
@@ -51,6 +52,15 @@ const DiscoverMovies = () => {
 
   const preparedFilters = prepareFilterValues(router.query);
 
+  // This page owns the ON-by-default behavior of the availability filter,
+  // because it is one of the only two pages that mounts the toggle for it.
+  // preparedFilters itself is left pristine so the slideover's "Clear Active
+  // Filters" button and key count still reflect only real URL params.
+  const discoverFilters: FilterOptions = {
+    ...preparedFilters,
+    availability: preparedFilters.availability ?? AVAILABILITY_DEFAULT,
+  };
+
   const {
     isLoadingInitialData,
     isEmpty,
@@ -61,7 +71,7 @@ const DiscoverMovies = () => {
     error,
   } = useDiscover<MovieResult, unknown, FilterOptions>(
     '/api/v1/discover/movies',
-    preparedFilters
+    discoverFilters
   );
   const [showFilters, setShowFilters] = useState(false);
 
