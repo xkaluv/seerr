@@ -86,6 +86,8 @@
   "components.Discover.FilterSlideover.availabilityTip": "Hides titles already in your library or already requested. On by default.",
   "components.Discover.FilterSlideover.certification": "Content Rating",
   "components.Discover.FilterSlideover.clearfilters": "Clear Active Filters",
+  "components.Discover.FilterSlideover.excludeGenres": "Exclude Genres",
+  "components.Discover.FilterSlideover.excludeGenresTip": "Never show titles in these genres. Applied by TMDB, so excluded titles are absent from the results entirely.",
   "components.Discover.FilterSlideover.excludeKeywords": "Exclude Keywords",
   "components.Discover.FilterSlideover.filters": "Filters",
   "components.Discover.FilterSlideover.firstAirDate": "First Air Date",

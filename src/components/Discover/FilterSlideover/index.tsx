@@ -23,7 +23,7 @@ import {
   useUpdateQueryParams,
 } from '@app/hooks/useUpdateQueryParams';
 import defineMessages from '@app/utils/defineMessages';
-import { XCircleIcon } from '@heroicons/react/24/outline';
+import { NoSymbolIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import Datepicker from '@seerr-team/react-tailwindcss-datepicker';
 import { useIntl } from 'react-intl';
 
@@ -37,6 +37,9 @@ const messages = defineMessages('components.Discover.FilterSlideover', {
   to: 'To',
   studio: 'Studio',
   genres: 'Genres',
+  excludeGenres: 'Exclude Genres',
+  excludeGenresTip:
+    'Never show titles in these genres. Applied by TMDB, so excluded titles are absent from the results entirely.',
   keywords: 'Keywords',
   excludeKeywords: 'Exclude Keywords',
   originalLanguage: 'Original Language',
@@ -184,6 +187,38 @@ const FilterSlideover = ({
           isMulti
           onChange={(value) => {
             updateQueryParams('genre', value?.map((v) => v.value).join(','));
+          }}
+        />
+        {/*
+          Negation is its own field rather than an invert toggle on each chip in
+          the Genres control above. That mirrors the existing
+          Keywords / Exclude Keywords pair exactly, which is the established
+          pattern for this slideover, and it keeps one URL param per direction
+          so `genre` and `excludeGenres` map cleanly onto TMDB's `with_genres`
+          and `without_genres`. A per-chip invert would need a custom
+          react-select value renderer and a two-state encoding inside a single
+          param, which is a redesign of the genre control rather than a filter.
+        */}
+        <div className="flex items-start justify-between">
+          <div className="flex flex-col pr-4">
+            <span className="flex items-center text-lg font-semibold">
+              <NoSymbolIcon className="mr-2 h-5 w-5 flex-shrink-0 text-gray-400" />
+              {intl.formatMessage(messages.excludeGenres)}
+            </span>
+            <span className="text-sm text-gray-400">
+              {intl.formatMessage(messages.excludeGenresTip)}
+            </span>
+          </div>
+        </div>
+        <GenreSelector
+          type={type}
+          defaultValue={currentFilters.excludeGenres}
+          isMulti
+          onChange={(value) => {
+            updateQueryParams(
+              'excludeGenres',
+              value?.map((v) => v.value).join(',')
+            );
           }}
         />
         {type === 'tv' && (

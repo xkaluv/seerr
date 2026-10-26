@@ -98,6 +98,11 @@ export const QueryFilterOptions = z.object({
   firstAirDateLte: z.string().optional(),
   studio: z.string().optional(),
   genre: z.string().optional(),
+  // Comma-separated TMDB genre ids to EXCLUDE. Unlike `availability`, this is a
+  // real API param: the discover route forwards it to TMDB's native
+  // `without_genres`, so the exclusion happens upstream and page counts,
+  // totalResults and pagination all stay consistent with what is displayed.
+  excludeGenres: z.string().optional(),
   keywords: z.string().optional(),
   excludeKeywords: z.string().optional(),
   language: z.string().optional(),
@@ -184,6 +189,10 @@ export const prepareFilterValues = (
 
   if (values.genre) {
     filterValues.genre = values.genre;
+  }
+
+  if (values.excludeGenres) {
+    filterValues.excludeGenres = values.excludeGenres;
   }
 
   if (values.status) {
@@ -324,6 +333,15 @@ export const countActiveFilters = (filterValues: FilterOptions): number => {
   }
 
   delete clonedFilters.certificationMode;
+
+  // `excludeGenres` is deliberately NOT special-cased and NOT deleted above, so
+  // it is picked up by the generic key count below and reads as one active
+  // filter whenever the URL carries it. Unlike `availability` it is empty by
+  // default, so presence and effective state are the same thing and there is no
+  // "0 Active Filters" lie to guard against. A filter that silently removes
+  // rows without registering here is the exact regression this comment exists
+  // to prevent: if this ever gains a default, count it from its effective
+  // state the way the availability filter does.
   totalCount += Object.keys(clonedFilters).length;
 
   return totalCount;
